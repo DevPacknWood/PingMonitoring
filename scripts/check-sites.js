@@ -13,7 +13,7 @@ const SITES = [
 ];
 
 const EMAIL_FROM = "Uptime Monitor <onboarding@resend.dev>"; // TODO: Replace with your verified sender
-const EMAIL_TO = ["dev@groupefirstpack.com", "web@groupefirstpack.com"];
+const EMAIL_TO = "dev@groupefirstpack.com";
 
 // ─── Vercel KV helpers (Upstash REST API) ────────────────────────────────────
 
