@@ -47,6 +47,9 @@ async function checkSite(site) {
   try {
     const res = await fetch(site.url, {
       signal: AbortSignal.timeout(10000),
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; UptimeMonitor/1.0)",
+      },
     });
     const ms = Date.now() - start;
     if (res.status >= 400) {
