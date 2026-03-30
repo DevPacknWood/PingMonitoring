@@ -3,14 +3,17 @@ const { Resend } = require("resend");
 // ─── Configuration ───────────────────────────────────────────────────────────
 
 const SITES = [
-  // TODO: Replace these with your own sites
-  { name: "Example", url: "https://example.com" },
-  // { name: "My App", url: "https://myapp.com" },
-  // { name: "API", url: "https://api.myapp.com/health" },
+  { name: "firstpack.fr", url: "https://www.firstpack.fr/" },
+  { name: "laboutiquedujetable.fr", url: "https://www.laboutiquedujetable.fr/" },
+  { name: "ecolomique.com", url: "https://www.ecolomique.com/" },
+  { name: "nvase.es", url: "https://nvase.es/" },
+  { name: "fhc-evolupack.fr", url: "https://fhc-evolupack.fr/" },
+  { name: "instovi.it", url: "https://instovi.it/" },
+  { name: "bioandchic.com", url: "https://bioandchic.com/" },
 ];
 
 const EMAIL_FROM = "Uptime Monitor <onboarding@resend.dev>"; // TODO: Replace with your verified sender
-const EMAIL_TO = "you@example.com"; // TODO: Replace with your email
+const EMAIL_TO = ["dev@groupefirstpack.com", "web@groupefirstpack.com"];
 
 // ─── Vercel KV helpers (Upstash REST API) ────────────────────────────────────
 
