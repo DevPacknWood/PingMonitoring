@@ -1,0 +1,9 @@
+{
+  "name": "uptime-monitor",
+  "version": "1.0.0",
+  "description": "Uptime monitor with email alerts via Resend and state persistence via Vercel KV",
+  "private": true,
+  "dependencies": {
+    "resend": "^3.0.0"
+  }
+}
