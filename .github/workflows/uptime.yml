@@ -5,9 +5,14 @@ on:
   repository_dispatch:
     types: [ping]
 
+concurrency:
+  group: uptime-monitor
+  cancel-in-progress: true
+
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
