@@ -21,7 +21,7 @@ const KV_URL = process.env.KV_REST_API_URL;
 const KV_TOKEN = process.env.KV_REST_API_TOKEN;
 
 async function kvGet(key) {
-  const res = await fetch(`${KV_URL}/get/${key}`, {
+  const res = await fetch(`${KV_URL}/get/${encodeURIComponent(key)}`, {
     headers: { Authorization: `Bearer ${KV_TOKEN}` },
   });
   const data = await res.json();
@@ -29,13 +29,15 @@ async function kvGet(key) {
 }
 
 async function kvSet(key, value) {
-  await fetch(`${KV_URL}/set/${key}/${value}`, {
+  await fetch(`${KV_URL}/set/${encodeURIComponent(key)}/${value}`, {
+    method: "POST",
     headers: { Authorization: `Bearer ${KV_TOKEN}` },
   });
 }
 
 async function kvDel(key) {
-  await fetch(`${KV_URL}/del/${key}`, {
+  await fetch(`${KV_URL}/del/${encodeURIComponent(key)}`, {
+    method: "POST",
     headers: { Authorization: `Bearer ${KV_TOKEN}` },
   });
 }
@@ -46,7 +48,7 @@ async function checkSite(site) {
   const start = Date.now();
   try {
     const res = await fetch(site.url, {
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(20000),
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; UptimeMonitor/1.0)",
       },
@@ -142,23 +144,35 @@ async function sendRecovery(recovered) {
 
   for (const result of results) {
     const kvKey = `down:${result.url}`;
+    const pendingKey = `pending:${result.url}`;
     const wasDown = await kvGet(kvKey);
+    const wasPending = await kvGet(pendingKey);
 
-    if (!result.ok && !wasDown) {
-      // New failure
-      console.log(`❌ DOWN — ${result.name} (${result.url}): ${result.error}`);
-      newFailures.push(result);
-      await kvSet(kvKey, "1");
-    } else if (!result.ok && wasDown) {
-      // Still down
-      console.log(`⏳ STILL DOWN — ${result.name} (${result.url}): ${result.error}`);
+    if (!result.ok) {
+      if (wasDown) {
+        // Confirmed down, already alerted
+        console.log(`⏳ STILL DOWN — ${result.name} (${result.url}): ${result.error}`);
+        await kvDel(pendingKey);
+      } else if (wasPending) {
+        // Second consecutive failure → confirm and alert
+        console.log(`❌ DOWN CONFIRMED — ${result.name} (${result.url}): ${result.error}`);
+        newFailures.push(result);
+        await kvSet(kvKey, "1");
+        await kvDel(pendingKey);
+      } else {
+        // First failure → mark pending, wait for next check before alerting
+        console.log(`⚠️ FIRST FAILURE (waiting confirmation) — ${result.name}: ${result.error}`);
+        await kvSet(pendingKey, "1");
+      }
     } else if (result.ok && wasDown) {
       // Recovered
       console.log(`✅ RECOVERED — ${result.name} (${result.url}) in ${result.ms}ms`);
       recovered.push(result);
       await kvDel(kvKey);
+      await kvDel(pendingKey);
     } else {
       // All good
+      if (wasPending) await kvDel(pendingKey); // transient failure resolved
       console.log(`✅ OK — ${result.name} (${result.url}) in ${result.ms}ms`);
     }
   }
